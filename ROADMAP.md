@@ -39,22 +39,36 @@ A 2D top-down colony simulation and city builder game inspired by Rimworld, Dwar
 
 ---
 
-## Phase 2: World & Terrain System (Weeks 4-6)
+## Phase 2: World & Terrain System (Weeks 4-6) ✅ COMPLETE
 
-### 2.1 Tile-Based World
-- [ ] Design tile data structure (terrain type, elevation, resources)
-- [ ] Implement tilemap rendering system
-- [ ] Create procedural terrain generation (noise-based)
-- [ ] Add terrain types (grass, dirt, stone, water, sand)
-- [ ] Implement chunk loading for large maps
+### 2.1 Tile-Based World ✅
+- [x] Design tile data structure (terrain type, elevation, resources)
+- [x] Implement tilemap rendering system
+- [x] Create procedural terrain generation (noise-based)
+- [x] Add terrain types (grass, dirt, stone, water, sand, snow)
+- [x] Implement chunk loading for large maps
 
-### 2.2 Resource Deposits
-- [ ] Place natural resource nodes (trees, rocks, ore deposits)
-- [ ] Create resource visualization (SVG icons/overlays)
-- [ ] Implement resource quantity tracking
-- [ ] Add resource regeneration mechanics (trees regrow)
+**Implementation Notes:**
+- GameTileData class with terrain/resource enums, elevation, walkability
+- Chunk-based rendering (16x16 tiles, 32px size) with WorldTilemap
+- FastNoiseLite: Perlin noise for elevation, Simplex for moisture
+- 6 terrain types determined by elevation + moisture thresholds
+- 3 visual variations per terrain type for variety
 
-### 2.3 Pathfinding Foundation
+### 2.2 Resource Deposits ✅
+- [x] Place natural resource nodes (trees, rocks, ore deposits)
+- [x] Create resource visualization (SVG icons/overlays)
+- [x] Implement resource quantity tracking
+- [ ] Add resource regeneration mechanics (trees regrow) - DEFERRED
+
+**Implementation Notes:**
+- Procedural placement using cellular noise
+- Trees (30% on grass), Rocks (20% on stone/dirt), Ore (10% on stone)
+- Resource sprites rendered as overlays (z_index = 1)
+- Quantity ranges: Trees 50-100, Rocks 30-60, Ore 20-50
+- 80% iron ore, 20% gold ore distribution
+
+### 2.3 Pathfinding Foundation - DEFERRED TO PHASE 3.3
 - [ ] Implement A* pathfinding algorithm
 - [ ] Create navigation grid from tilemap
 - [ ] Add walkability rules (water blocks, buildings block)
@@ -62,21 +76,34 @@ A 2D top-down colony simulation and city builder game inspired by Rimworld, Dwar
 
 ---
 
-## Phase 3: Basic Colonist System (Weeks 7-9)
+## Phase 3: Basic Colonist System (Weeks 7-9) - IN PROGRESS
 
-### 3.1 Colonist Entity
-- [ ] Create colonist entity class with stats (health, hunger, mood)
-- [ ] Implement colonist sprite rendering (SVG-based)
+### 3.1 Colonist Entity ✅
+- [x] Create colonist entity class with stats (health, hunger, energy, mood)
+- [x] Implement colonist sprite rendering (SVG-based)
 - [ ] Add basic animation states (idle, walking, working)
-- [ ] Create colonist selection and info panel UI
+- [x] Create colonist selection and info panel UI
 
-### 3.2 Needs & Survival
-- [ ] Implement hunger system with food consumption
-- [ ] Add rest/sleep requirement with energy tracking
-- [ ] Create basic mood/happiness system
-- [ ] Implement death conditions (starvation, no rest)
+**Implementation Notes:**
+- CharacterBody2D with full stat system (health, hunger, energy, mood)
+- Stat decay: hunger 0.5/sec, energy 0.3/sec when active
+- Energy recovery: 2.0/sec when sleeping
+- State machine: IDLE, WALKING, WORKING, SLEEPING, EATING, DEAD
+- Click-to-select with real-time stat display in UI panel
 
-### 3.3 Basic AI & Tasks
+### 3.2 Needs & Survival ✅
+- [x] Implement hunger system with food consumption
+- [x] Add rest/sleep requirement with energy tracking
+- [x] Create basic mood/happiness system
+- [x] Implement death conditions (starvation, exhaustion, injuries)
+
+**Implementation Notes:**
+- Hunger and energy deplete continuously, mood calculated from both
+- Death triggers at 0 hunger (starvation), 0 energy (exhaustion), or 0 health
+- Colonist manager spawns 3 starting colonists at world center
+- Selection indicator (yellow highlight) shows on selected colonist
+
+### 3.3 Basic AI & Tasks - TODO
 - [ ] Build task queue system
 - [ ] Implement idle behavior (wander, rest)
 - [ ] Create "Find Food" autonomous task
