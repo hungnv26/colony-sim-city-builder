@@ -1,0 +1,25 @@
+[gd_scene load_steps=4 format=3 uid="uid://c7xm4qw8n5yf2"]
+
+[ext_resource type="Script" path="res://scripts/systems/game_world.gd" id="1_game_world"]
+[ext_resource type="Script" path="res://scripts/systems/game_camera.gd" id="2_camera"]
+[ext_resource type="PackedScene" uid="uid://d3k8xqw9p6yf4" path="res://scenes/ui/game_ui.tscn" id="3_ui"]
+
+[node name="GameWorld" type="Node2D"]
+script = ExtResource("1_game_world")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("2_camera")
+
+[node name="WorldLayer" type="Node2D" parent="."]
+
+[node name="TerrainLayer" type="Node2D" parent="WorldLayer"]
+
+[node name="BuildingsLayer" type="Node2D" parent="WorldLayer"]
+
+[node name="UnitsLayer" type="Node2D" parent="WorldLayer"]
+
+[node name="EffectsLayer" type="Node2D" parent="WorldLayer"]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="GameUI" parent="CanvasLayer" instance=ExtResource("3_ui")]
