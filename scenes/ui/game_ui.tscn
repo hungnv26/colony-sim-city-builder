@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://d3k8xqw9p6yf4"]
+[gd_scene load_steps=3 format=3 uid="uid://d3k8xqw9p6yf4"]
 
 [ext_resource type="Script" path="res://scripts/ui/game_ui.gd" id="1_ui"]
+[ext_resource type="PackedScene" uid="uid://c8xn6qw0o7yh4" path="res://scenes/ui/colonist_info_panel.tscn" id="2_colonist_info"]
 
 [node name="GameUI" type="Control"]
 layout_mode = 3
@@ -94,6 +95,20 @@ text = "Tasks"
 [node name="ColonistsButton" type="Button" parent="BottomBar/MarginContainer/HBoxContainer"]
 layout_mode = 2
 text = "Colonists"
+
+[node name="ColonistInfoPanel" parent="." instance=ExtResource("2_colonist_info")]
+layout_mode = 1
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 10.0
+offset_top = 50.0
+offset_right = 260.0
+offset_bottom = 250.0
+grow_horizontal = 1
+grow_vertical = 1
 
 [node name="MinimapPlaceholder" type="Panel" parent="."]
 layout_mode = 1

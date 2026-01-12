@@ -1,11 +1,16 @@
 extends Control
 
 @onready var resources_label: Label = $TopBar/MarginContainer/HBoxContainer/ResourcesLabel
+@onready var colonist_info_panel = $ColonistInfoPanel
 
 func _ready() -> void:
 	_update_ui()
 	# Connect to resource changes
 	ResourceManager.resource_changed.connect(_on_resource_changed)
+
+	# Hide colonist info panel initially
+	if colonist_info_panel:
+		colonist_info_panel.hide()
 
 func _update_ui() -> void:
 	# Show current resources
@@ -27,3 +32,11 @@ func _on_menu_button_pressed() -> void:
 	get_tree().paused = true
 	# TODO: Show pause menu overlay
 	print("Menu button pressed")
+
+func show_colonist_info(colonist) -> void:
+	if colonist_info_panel:
+		colonist_info_panel.show_colonist_info(colonist)
+
+func hide_colonist_info() -> void:
+	if colonist_info_panel:
+		colonist_info_panel.hide_colonist_info()

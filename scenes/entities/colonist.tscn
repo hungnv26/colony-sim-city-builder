@@ -1,0 +1,30 @@
+[gd_scene load_steps=3 format=3 uid="uid://b7xm5qw9n6yg3"]
+
+[ext_resource type="Script" path="res://scripts/entities/colonist.gd" id="1_colonist"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1"]
+radius = 12.0
+
+[node name="Colonist" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_colonist")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_1")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+
+[node name="SelectionIndicator" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 0, 0.5)
+position = Vector2(0, -20)
+scale = Vector2(1.5, 0.3)
+
+[node name="StatsLabel" type="Label" parent="."]
+visible = false
+offset_left = -30.0
+offset_top = -40.0
+offset_right = 30.0
+offset_bottom = -25.0
+text = "Colonist"
+horizontal_alignment = 1
