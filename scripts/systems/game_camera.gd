@@ -13,8 +13,8 @@ extends Camera2D
 
 # Camera bounds (world limits)
 @export var enable_bounds: bool = true
-@export var bounds_min: Vector2 = Vector2(-2000, -2000)
-@export var bounds_max: Vector2 = Vector2(2000, 2000)
+@export var bounds_min: Vector2 = Vector2(-500, -500)
+@export var bounds_max: Vector2 = Vector2(3700, 3700)
 
 # Smooth movement
 @export var smooth_camera: bool = true
@@ -28,7 +28,11 @@ var viewport_size: Vector2
 func _ready() -> void:
 	# Set initial zoom
 	target_zoom = zoom
-	target_position = position
+
+	# Start camera at world center (for 100x100 tiles @ 32px = 3200x3200, center is 1600,1600)
+	var world_center = Vector2(1600, 1600)
+	target_position = world_center
+	position = world_center
 
 	# Connect to input manager signals
 	InputManager.move_camera_requested.connect(_on_move_camera_requested)
