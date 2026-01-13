@@ -1,3 +1,9 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# Godot auto-generated UID files
+*.uid
+
+# Backup files
+*.bak
