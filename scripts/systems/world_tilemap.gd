@@ -138,3 +138,25 @@ func clear_all_tiles() -> void:
 	for chunk in chunks.values():
 		chunk.queue_free()
 	chunks.clear()
+
+# Compatibility methods for pathfinding and other systems
+
+func local_to_map(local_pos: Vector2) -> Vector2i:
+	# Convert world/local position to tile coordinates
+	return world_to_grid(local_pos)
+
+func map_to_local(map_pos: Vector2i) -> Vector2:
+	# Convert tile coordinates to world position (center of tile)
+	var world_pos = grid_to_world(map_pos)
+	return world_pos + Vector2(TILE_SIZE / 2.0, TILE_SIZE / 2.0)
+
+func get_tile_data(from_pos: Vector2i, to_pos: Vector2i):
+	# Get tile data at target position
+	# from_pos is used in some tilemap APIs but not needed here
+	return get_tile(to_pos)
+
+func update_tile(grid_pos: Vector2i) -> void:
+	# Re-render a tile (used when tile data changes)
+	var tile_data = get_tile(grid_pos)
+	if tile_data != null:
+		_render_tile(grid_pos, tile_data)

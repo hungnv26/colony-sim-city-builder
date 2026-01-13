@@ -6,6 +6,7 @@ signal camera_drag_requested(delta: Vector2)
 signal zoom_requested(zoom_delta: float)
 signal pause_requested()
 signal select_requested(position: Vector2)
+signal right_click_requested(position: Vector2)
 
 # Input state
 var mouse_position: Vector2 = Vector2.ZERO
@@ -47,6 +48,10 @@ func _handle_mouse_button(event: InputEventMouseButton) -> void:
 			if event.position.distance_to(drag_start_position) < 5.0:
 				# It was a click, not a drag
 				select_requested.emit(event.position)
+
+	# Right click for context actions (harvest designation, etc.)
+	if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+		right_click_requested.emit(event.position)
 
 	# Middle mouse button for camera dragging
 	if event.button_index == MOUSE_BUTTON_MIDDLE:

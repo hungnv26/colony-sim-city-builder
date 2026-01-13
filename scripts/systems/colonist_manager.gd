@@ -9,6 +9,9 @@ var selected_colonist: Colonist = null
 # Colonist scene
 const ColonistScene = preload("res://scenes/entities/colonist.tscn")
 
+# Task system
+const ConstructBuildingTaskScript = preload("res://scripts/ai/tasks/construct_building_task.gd")
+
 # Spawn settings
 @export var starting_colonist_count: int = 3
 @export var spawn_radius: float = 200.0
@@ -112,3 +115,42 @@ func get_colonist_count() -> int:
 
 func get_living_count() -> int:
 	return get_living_colonists().size()
+
+## Assign construction task to available colonist
+func assign_construction_task(building) -> bool:
+	# Find an idle colonist to assign the task
+	var available_colonist = _find_available_colonist()
+	if available_colonist == null:
+		print("No available colonists for construction task")
+		return false
+
+	# Create construction task
+	var task = ConstructBuildingTaskScript.new(building)
+
+	# Assign to colonist
+	available_colonist.task_queue.add_task(task)
+	print("Assigned construction of '%s' to %s" % [building.building_data.display_name, available_colonist.colonist_name])
+
+	return true
+
+## Find an available colonist for work assignment
+func _find_available_colonist() -> Colonist:
+	# Prefer idle colonists
+	for colonist in colonists:
+		if colonist.current_state == Colonist.State.IDLE:
+			return colonist
+
+	# Otherwise find colonist with fewest tasks
+	var best_colonist: Colonist = null
+	var min_tasks = 999
+
+	for colonist in colonists:
+		if colonist.current_state == Colonist.State.DEAD:
+			continue
+
+		var task_count = colonist.task_queue.get_task_count() if colonist.task_queue else 0
+		if task_count < min_tasks:
+			min_tasks = task_count
+			best_colonist = colonist
+
+	return best_colonist

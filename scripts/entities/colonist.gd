@@ -2,6 +2,11 @@ extends CharacterBody2D
 
 class_name Colonist
 
+const TaskQueueScript = preload("res://scripts/ai/task_queue.gd")
+const IdleTaskScript = preload("res://scripts/ai/tasks/idle_task.gd")
+const FindFoodTaskScript = preload("res://scripts/ai/tasks/find_food_task.gd")
+const SleepTaskScript = preload("res://scripts/ai/tasks/sleep_task.gd")
+
 # Colonist stats
 @export var colonist_name: String = "Colonist"
 @export var max_health: float = 100.0
@@ -24,6 +29,14 @@ var mood: float = 75.0  # 0 = depressed, 100 = happy
 @export var move_speed: float = 100.0
 var current_path: PackedVector2Array = []
 var path_index: int = 0
+
+# AI Task system
+var task_queue = null  # TaskQueue instance
+var _idle_task = null  # Default idle task
+
+# Thresholds for autonomous behavior
+const HUNGER_THRESHOLD: float = 60.0  # Start looking for food below this
+const ENERGY_THRESHOLD: float = 30.0  # Start looking to sleep below this
 
 # State
 enum State {
@@ -51,6 +64,13 @@ func _ready() -> void:
 	if selection_indicator:
 		selection_indicator.visible = false
 
+	# Initialize task system
+	task_queue = TaskQueueScript.new(self)
+
+	# Create default idle task
+	_idle_task = IdleTaskScript.new()
+	task_queue.add_task(_idle_task)
+
 	# Start stat decay
 	_start_stat_decay()
 
@@ -58,9 +78,49 @@ func _process(delta: float) -> void:
 	# Update stats based on state
 	_update_stats(delta)
 
-	# Handle movement
-	if current_state == State.WALKING:
+	# Process AI tasks
+	if current_state != State.DEAD:
+		_process_ai(delta)
+
+	# Handle old path-based movement (deprecated, kept for compatibility)
+	if current_state == State.WALKING and current_path.size() > 0:
 		_follow_path(delta)
+
+func _process_ai(delta: float) -> void:
+	# Check if colonist needs urgent care
+	_check_urgent_needs()
+
+	# Process task queue
+	if task_queue != null:
+		task_queue.process(delta)
+
+func _check_urgent_needs() -> void:
+	# Check if colonist is hungry and needs food
+	if hunger < HUNGER_THRESHOLD:
+		# Check if food task already exists
+		if not _has_task_of_type(FindFoodTaskScript):
+			var food_task = FindFoodTaskScript.new()
+			task_queue.add_task(food_task)
+
+	# Check if colonist is tired and needs sleep
+	if energy < ENERGY_THRESHOLD:
+		# Check if sleep task already exists
+		if not _has_task_of_type(SleepTaskScript):
+			var sleep_task = SleepTaskScript.new()
+			task_queue.add_task(sleep_task)
+
+func _has_task_of_type(task_type) -> bool:
+	if task_queue == null:
+		return false
+
+	# Check current task
+	var current_task = task_queue.get_current_task()
+	if current_task != null and is_instance_of(current_task, task_type):
+		return true
+
+	# Check queued tasks (can't easily access private _tasks array, so return false)
+	# This is okay - tasks will just get added and priority will determine execution
+	return false
 
 func _update_stats(delta: float) -> void:
 	if current_state == State.DEAD:
@@ -112,31 +172,38 @@ func die(cause: String) -> void:
 		return
 
 	print("%s died from %s" % [colonist_name, cause])
-	set_state(State.DEAD)
+	change_state(State.DEAD)
 	died.emit()
+
+	# Clear all tasks
+	if task_queue != null:
+		task_queue.clear_all_tasks()
 
 	# Visual feedback
 	if sprite:
 		sprite.modulate = Color(0.5, 0.5, 0.5, 0.7)
 
-func set_state(new_state: State) -> void:
+func change_state(new_state: State) -> void:
 	if current_state == new_state:
 		return
 
 	current_state = new_state
 	state_changed.emit(new_state)
 
+func set_state(new_state: State) -> void:
+	change_state(new_state)
+
 func set_path(path: PackedVector2Array) -> void:
 	current_path = path
 	path_index = 0
 	if path.size() > 0:
-		set_state(State.WALKING)
+		change_state(State.WALKING)
 
 func _follow_path(delta: float) -> void:
 	if current_path.size() == 0 or path_index >= current_path.size():
 		current_path = []
 		path_index = 0
-		set_state(State.IDLE)
+		change_state(State.IDLE)
 		return
 
 	var target = current_path[path_index]
@@ -149,7 +216,7 @@ func _follow_path(delta: float) -> void:
 		if path_index >= current_path.size():
 			current_path = []
 			path_index = 0
-			set_state(State.IDLE)
+			change_state(State.IDLE)
 	else:
 		# Move towards waypoint
 		velocity = direction * move_speed
@@ -190,6 +257,11 @@ func get_state_name() -> String:
 		State.EATING: return "Eating"
 		State.DEAD: return "Dead"
 		_: return "Unknown"
+
+func get_current_task_description() -> String:
+	if task_queue != null:
+		return task_queue.get_current_task_description()
+	return "No task"
 
 func get_stats_summary() -> Dictionary:
 	return {

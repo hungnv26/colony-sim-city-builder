@@ -11,8 +11,19 @@ extends PanelContainer
 # Current colonist
 var current_colonist: Colonist = null
 
+# Update interval for task label (seconds)
+var _update_timer: float = 0.0
+const UPDATE_INTERVAL: float = 0.5
+
 func _ready() -> void:
 	hide()
+
+func _process(delta: float) -> void:
+	if current_colonist and visible:
+		_update_timer += delta
+		if _update_timer >= UPDATE_INTERVAL:
+			_update_timer = 0.0
+			_update_task_label()
 
 func show_colonist_info(colonist: Colonist) -> void:
 	if not colonist:
@@ -57,8 +68,7 @@ func _update_ui() -> void:
 	if name_label:
 		name_label.text = stats["name"]
 
-	if state_label:
-		state_label.text = "State: %s" % stats["state"]
+	_update_task_label()
 
 	if health_bar:
 		health_bar.value = stats["health"]
@@ -71,6 +81,11 @@ func _update_ui() -> void:
 
 	if mood_bar:
 		mood_bar.value = stats["mood"]
+
+func _update_task_label() -> void:
+	if current_colonist and state_label:
+		var task_desc = current_colonist.get_current_task_description()
+		state_label.text = "State: %s - %s" % [current_colonist.get_state_name(), task_desc]
 
 func _on_stat_changed(stat_name: String, value: float) -> void:
 	# Update specific stat bar
@@ -90,7 +105,7 @@ func _on_stat_changed(stat_name: String, value: float) -> void:
 
 func _on_state_changed(new_state) -> void:
 	if current_colonist and state_label:
-		state_label.text = "State: %s" % current_colonist.get_state_name()
+		_update_task_label()
 
 func _on_colonist_died() -> void:
 	hide_colonist_info()
