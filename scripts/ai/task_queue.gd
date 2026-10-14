@@ -45,8 +45,23 @@ func get_current_task():
 func has_tasks() -> bool:
 	return _tasks.size() > 0 or _current_task != null
 
+## Check if the current task or any queued task is of the given type
+func has_task_of_type(task_type) -> bool:
+	if _current_task != null and is_instance_of(_current_task, task_type):
+		return true
+	for task in _tasks:
+		if is_instance_of(task, task_type):
+			return true
+	return false
+
 ## Process the task queue (call this every frame)
 func process(delta: float) -> void:
+	# Let a more urgent task take over (e.g. eating interrupts idle wandering)
+	if _current_task != null and _has_higher_priority_task(_current_task.priority):
+		_current_task.interrupt()
+		add_task(_current_task)
+		_current_task = null
+
 	# If no current task, get the next one
 	if _current_task == null:
 		_get_next_task()
@@ -87,6 +102,15 @@ func _get_next_task() -> void:
 
 	# No executable tasks found
 	_current_task = null
+
+## Check if a queued task outranks the given priority and is ready to run
+func _has_higher_priority_task(current_priority: int) -> bool:
+	for task in _tasks:
+		if task.priority <= current_priority:
+			return false  # Queue is sorted, nothing further down outranks it
+		if task.can_execute():
+			return true
+	return false
 
 ## Sort tasks by priority (highest first)
 func _sort_tasks() -> void:

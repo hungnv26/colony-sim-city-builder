@@ -34,8 +34,13 @@ static func find_path(start_pos: Vector2, end_pos: Vector2, world) -> Array:
 
 	# Check if end tile is walkable
 	var end_tile_data = tilemap.get_tile_data(start_tile, end_tile)
-	if end_tile_data == null or not end_tile_data.is_walkable:
+	if end_tile_data == null:
 		return []
+	if not end_tile_data.is_walkable:
+		# Resources (trees, rocks, ore) block walking, so path to a tile beside them
+		end_tile = _nearest_walkable_neighbor(end_tile, start_tile, tilemap)
+		if end_tile == Vector2i(-1, -1):
+			return []
 
 	# Initialize open and closed sets
 	var open_set: Array = []
@@ -109,6 +114,21 @@ static func _get_lowest_f_cost_node(open_set: Array) -> PathNode:
 		if node.f_cost < lowest_node.f_cost or (node.f_cost == lowest_node.f_cost and node.h_cost < lowest_node.h_cost):
 			lowest_node = node
 	return lowest_node
+
+## Find the walkable neighbor of a tile that is closest to the start tile
+## Returns Vector2i(-1, -1) if the tile is fully enclosed
+static func _nearest_walkable_neighbor(tile: Vector2i, start_tile: Vector2i, tilemap) -> Vector2i:
+	var best = Vector2i(-1, -1)
+	var best_distance = INF
+	for neighbor_pos in _get_neighbors(tile):
+		var tile_data = tilemap.get_tile_data(start_tile, neighbor_pos)
+		if tile_data == null or not tile_data.is_walkable:
+			continue
+		var distance = _heuristic(start_tile, neighbor_pos)
+		if distance < best_distance:
+			best_distance = distance
+			best = neighbor_pos
+	return best
 
 ## Get all valid neighbor positions (8-directional)
 static func _get_neighbors(pos: Vector2i) -> Array:

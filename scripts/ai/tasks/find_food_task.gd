@@ -161,12 +161,23 @@ func _execute_gathering(delta: float) -> bool:
 
 	return false
 
+## Complete the task
+func complete() -> void:
+	super.complete()
+	_set_idle()
+
 ## Cancel the task
 func cancel() -> void:
 	super.cancel()
 	if _move_task != null:
 		_move_task.cancel()
 		_move_task = null
+	_set_idle()
+
+## Change state back to IDLE after eating or being interrupted
+func _set_idle() -> void:
+	if colonist != null and colonist.current_state == colonist.State.WORKING:
+		colonist.change_state(colonist.State.IDLE)
 
 ## Check if task can be executed
 func can_execute() -> bool:

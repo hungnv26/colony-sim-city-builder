@@ -112,15 +112,7 @@ func _check_urgent_needs() -> void:
 func _has_task_of_type(task_type) -> bool:
 	if task_queue == null:
 		return false
-
-	# Check current task
-	var current_task = task_queue.get_current_task()
-	if current_task != null and is_instance_of(current_task, task_type):
-		return true
-
-	# Check queued tasks (can't easily access private _tasks array, so return false)
-	# This is okay - tasks will just get added and priority will determine execution
-	return false
+	return task_queue.has_task_of_type(task_type)
 
 func _update_stats(delta: float) -> void:
 	if current_state == State.DEAD:

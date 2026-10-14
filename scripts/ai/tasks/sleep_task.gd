@@ -151,8 +151,8 @@ func can_execute() -> bool:
 	if not super.can_execute():
 		return false
 
-	# Only sleep if colonist is tired
-	if colonist.energy > 30.0:
+	# Only start sleeping if colonist is tired; once asleep, keep going until rested
+	if not is_started and colonist.energy > 30.0:
 		return false
 
 	# Can't sleep if dead

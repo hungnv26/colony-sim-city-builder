@@ -51,6 +51,13 @@ func cancel() -> void:
 	is_cancelled = true
 	is_completed = false
 
+## Called when a higher-priority task takes over
+## The task is cancelled now and restarted from scratch when it is picked again
+func interrupt() -> void:
+	cancel()
+	is_started = false
+	is_cancelled = false
+
 ## Called when the task completes successfully
 ## Override this in derived classes for cleanup
 func complete() -> void:

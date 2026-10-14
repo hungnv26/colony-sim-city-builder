@@ -72,6 +72,11 @@ static func _place_resources(tilemap: WorldTilemap, world_size: Vector2i, noise_
 	resource_noise.seed = noise_seed + 5000
 	resource_noise.noise_type = FastNoiseLite.TYPE_CELLULAR
 	resource_noise.frequency = 0.1
+	# The default cellular return type (distance) is always negative, so no tile
+	# ever passed the thresholds. Cell value gives each ~10-tile cell a uniform
+	# random value in [-1, 1]; cells above PATCH_THRESHOLD become resource patches.
+	resource_noise.cellular_return_type = FastNoiseLite.RETURN_CELL_VALUE
+	const PATCH_THRESHOLD: float = 0.0
 
 	print("Placing natural resources...")
 
@@ -87,22 +92,28 @@ static func _place_resources(tilemap: WorldTilemap, world_size: Vector2i, noise_
 			if not tile or not tile.is_walkable:
 				continue
 
-			var resource_value = resource_noise.get_noise_2d(float(x), float(y))
+			# Only tiles inside a resource patch get resources; the per-tile roll
+			# thins the patch so resources stay clumped but walkable.
+			if resource_noise.get_noise_2d(float(x), float(y)) <= PATCH_THRESHOLD:
+				continue
+
+			var is_stone = tile.terrain_type == TileDataScript.TerrainType.STONE
+			var is_dirt = tile.terrain_type == TileDataScript.TerrainType.DIRT
 
 			# Trees on grass (30% chance in suitable areas)
-			if tile.terrain_type == TileDataScript.TerrainType.GRASS and resource_value > 0.4:
+			if tile.terrain_type == TileDataScript.TerrainType.GRASS and randf() < 0.6:
 				tile.set_resource(TileDataScript.ResourceType.TREE, 50 + randi() % 50)
 				trees_placed += 1
 
-			# Rocks on stone/dirt (20% chance)
-			elif (tile.terrain_type == TileDataScript.TerrainType.STONE or tile.terrain_type == TileDataScript.TerrainType.DIRT) and resource_value > 0.6:
-				tile.set_resource(TileDataScript.ResourceType.ROCK, 30 + randi() % 30)
-				rocks_placed += 1
-
-			# Ore on stone (10% chance)
-			elif tile.terrain_type == TileDataScript.TerrainType.STONE and resource_value > 0.75:
+			# Ore on stone (10% chance) - checked before rocks so it can actually spawn
+			elif is_stone and randf() < 0.2:
 				var ore_type = TileDataScript.ResourceType.ORE_IRON if randf() > 0.2 else TileDataScript.ResourceType.ORE_GOLD
 				tile.set_resource(ore_type, 20 + randi() % 30)
 				ore_placed += 1
+
+			# Rocks on stone/dirt (20% chance)
+			elif (is_stone or is_dirt) and randf() < 0.4:
+				tile.set_resource(TileDataScript.ResourceType.ROCK, 30 + randi() % 30)
+				rocks_placed += 1
 
 	print("Resources placed: %d trees, %d rocks, %d ore deposits" % [trees_placed, rocks_placed, ore_placed])
